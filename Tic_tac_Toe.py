@@ -55,7 +55,8 @@ def player_move(row, col):
         else:
             # Switch to computer's turn
             current_player = 'O'
-            computer_move()
+            # Schedule computer's move after a short delay
+            root.after(500, computer_move)  # 500 milliseconds (0.5 seconds) delay
     else:
         messagebox.showwarning("Invalid Move", "This space is already selected.")
 
