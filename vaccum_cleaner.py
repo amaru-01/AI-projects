@@ -60,6 +60,8 @@ class VacuumCleanerGUI:
         self.env = Environment(10, 10)
         self.agent = Agent(self.env)
 
+        self.is_running = False  # Flag to control simulation
+
         self.canvas = tk.Canvas(self.root, width=300, height=300)
         self.canvas.grid(row=0, column=0, columnspan=4)
 
@@ -71,11 +73,14 @@ class VacuumCleanerGUI:
         self.start_button = tk.Button(self.root, text="Start", command=self.start_simulation)
         self.start_button.grid(row=1, column=2)
 
+        self.stop_button = tk.Button(self.root, text="Stop", command=self.stop_simulation)  # Stop button
+        self.stop_button.grid(row=1, column=3)
+
         self.randomize_button = tk.Checkbutton(self.root, text="Randomize Dirt", command=self.randomize_dirt)
-        self.randomize_button.grid(row=1, column=3)
+        self.randomize_button.grid(row=2, column=0, columnspan=2)
 
         self.stats_label = tk.Label(self.root, text="Dirt Cleaned: 0, Energy Used: 0")
-        self.stats_label.grid(row=2, column=0, columnspan=4)
+        self.stats_label.grid(row=2, column=2, columnspan=2)
 
         self.root.bind("<Up>", lambda event: self.move_agent("UP"))
         self.root.bind("<Down>", lambda event: self.move_agent("DOWN"))
@@ -89,15 +94,20 @@ class VacuumCleanerGUI:
         self.update_display()
 
     def start_simulation(self):
+        self.is_running = True  # Set flag to True when starting
         delay = int(self.delay_entry.get()) if self.delay_entry.get() else 500
-        self.root.after(delay, self.run_step)
+        self.run_step(delay)
 
-    def run_step(self):
-        # In a real simulation, this would be a decision-making step for the agent
+    def stop_simulation(self):
+        self.is_running = False  # Set flag to False when stopping
+
+    def run_step(self, delay):
+        if not self.is_running:
+            return  # Exit if the simulation is stopped
         direction = random.choice(["UP", "DOWN", "LEFT", "RIGHT"])
         self.agent.move(direction)
         self.update_display()
-        self.start_simulation()
+        self.root.after(delay, lambda: self.run_step(delay))
 
     def move_agent(self, direction):
         self.agent.move(direction)
