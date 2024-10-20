@@ -35,16 +35,25 @@ class Environment:
         self.width = width
         self.height = height
         self.grid = [[0 for _ in range(width)] for _ in range(height)]
-        self.randomize_dirt()
+        self.randomize_dirt_and_obstacles()
 
-    def randomize_dirt(self):
+    def randomize_dirt_and_obstacles(self):
+        # Randomly place dirt
         for _ in range(10):  # 10 pieces of dirt
             x = random.randint(0, self.width - 1)
             y = random.randint(0, self.height - 1)
             self.grid[y][x] = 1  # 1 represents dirt
 
+        # Randomly place obstacles
+        for _ in range(5):  # 5 obstacles
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            if self.grid[y][x] == 0:  # Ensure the obstacle is not placed on dirt
+                self.grid[y][x] = 2  # 2 represents an obstacle
+
     def is_valid_move(self, x, y):
-        return 0 <= x < self.width and 0 <= y < self.height
+        # Agent cannot move out of bounds or onto an obstacle
+        return 0 <= x < self.width and 0 <= y < self.height and self.grid[y][x] != 2
 
     def is_dirt(self, x, y):
         return self.grid[y][x] == 1
@@ -76,7 +85,7 @@ class VacuumCleanerGUI:
         self.stop_button = tk.Button(self.root, text="Stop", command=self.stop_simulation)  # Stop button
         self.stop_button.grid(row=1, column=3)
 
-        self.randomize_button = tk.Checkbutton(self.root, text="Randomize Dirt", command=self.randomize_dirt)
+        self.randomize_button = tk.Checkbutton(self.root, text="Randomize Dirt & Obstacles", command=self.randomize_dirt)
         self.randomize_button.grid(row=2, column=0, columnspan=2)
 
         self.stats_label = tk.Label(self.root, text="Dirt Cleaned: 0, Energy Used: 0")
@@ -90,7 +99,7 @@ class VacuumCleanerGUI:
         self.update_display()
 
     def randomize_dirt(self):
-        self.env.randomize_dirt()
+        self.env.randomize_dirt_and_obstacles()
         self.update_display()
 
     def start_simulation(self):
@@ -120,9 +129,11 @@ class VacuumCleanerGUI:
             for x in range(self.env.width):
                 color = "white"
                 if self.env.is_dirt(x, y):
-                    color = "brown"
+                    color = "brown"  # Dirt
+                elif self.env.grid[y][x] == 2:
+                    color = "black"  # Obstacle
                 if self.agent.x == x and self.agent.y == y:
-                    color = "red"
+                    color = "red"  # Agent's position
                 self.canvas.create_rectangle(x * cell_size, y * cell_size, (x + 1) * cell_size, (y + 1) * cell_size, fill=color)
 
         # Update stats label
